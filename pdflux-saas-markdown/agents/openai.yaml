@@ -1,0 +1,4 @@
+interface:
+  display_name: "PDFlux SaaS Markdown"
+  short_description: "Parse docs and tables from PDF, DOCX, and images"
+  default_prompt: "Always execute the bundled scripts/upload_to_markdown.js script to parse one local PDF, DOCX, PPT, image, or similar file. If the user explicitly asks to convert to markdown or output markdown, return the markdown content directly; otherwise extract only the document content or tables needed for the task."
