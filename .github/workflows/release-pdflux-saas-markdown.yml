@@ -21,7 +21,8 @@ jobs:
           ARCHIVE_NAME: pdflux-saas-markdown-${{ github.ref_name }}.zip
         run: |
           rm -f "$ARCHIVE_NAME"
-          zip -r "$ARCHIVE_NAME" pdflux-saas-markdown
+          cd pdflux-saas-markdown
+          zip -r "../$ARCHIVE_NAME" .
 
       - name: Publish release
         uses: softprops/action-gh-release@v2
