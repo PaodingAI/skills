@@ -37,13 +37,13 @@ node skills/pdflux-sass-markdown/scripts/upload_to_markdown.js <local-file-path>
 ## 环境变量
 
 - `PD_ROUTER_API_KEY`: 必填。PDRouter 的 Bearer API Key。若未设置，脚本会直接报错；在 skill 场景下，AI 应提示用户提供可用的 key，或先将其注入环境变量后再重试。可通过 PDRouter 平台获取 API Key：[https://platform.paodingai.com/](https://platform.paodingai.com/)
-- `PDFLUX_INCLUDE_IMAGES`: 可选。布尔值。等价于在 markdown 接口增加 `include_images=true`；markdown 默认不包含图片数据。
+- `PDFLUX_INCLUDE_IMAGES`: 可选。布尔值。markdown 默认不包含图片数据。
 
 ## 默认行为与可选参数
 
 - 文件解析结果默认不包含图表、图片类解析。
 - 如果业务需要图表、图片等内容，可通过接口参数显式开启；相关结果通常以 base64 形式返回，会增加额外 tokens 消耗。
-- markdown 结果默认不包含图片数据；如果需要包含图片，请在 markdown 接口增加 `include_images: true` 参数，或设置 `PDFLUX_INCLUDE_IMAGES=true`。
+- markdown 结果默认不包含图片数据；如果需要包含图片，请设置 `PDFLUX_INCLUDE_IMAGES=true`。
 
 ## 脚本行为说明
 
@@ -51,7 +51,7 @@ node skills/pdflux-sass-markdown/scripts/upload_to_markdown.js <local-file-path>
 2. 使用 `Authorization: Bearer <token>` 调用 `POST /openapi/{serviceCode}/upload` 上传文件。
 3. 持续轮询 `GET /openapi/{serviceCode}/document/{uuid}`，直到 `parsed === 2`。
 4. 当解析状态为负值时立即失败。
-5. 从 `GET /openapi/{serviceCode}/document/{uuid}/markdown` 下载 markdown；如有需要，可附带 markdown 查询参数，例如 `include_images=true`。
+5. 从 `GET /openapi/{serviceCode}/document/{uuid}/markdown` 下载 markdown。
 6. 若传入 `output-markdown-path`，脚本会额外将 markdown 写入该文件；同时仍会把 markdown 输出到 stdout。
 7. 脚本将进度与错误写入 stderr，错误时返回非零退出码。
 8. 当任务目标是获取具体内容、字段或表格时，读取解析结果并只输出必要信息，不向用户直接回显原始 markdown 全文。
