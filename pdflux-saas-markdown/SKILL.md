@@ -1,58 +1,59 @@
 ---
 name: PDFlux-PDF2Markdown
-description: 将非结构化文档转化为“大模型 Ready”的结构化数据。支持 PDF、Word、PPT 及图片，一键提取段落、公式、表格、图表等元素，生成最高 8 级目录索引，并按阅读逻辑组织输出 Markdown。应用场景：字段抽取、对比校验、知识检索与智能问答。
+description: Convert unstructured documents into LLM-ready structured data. Supports PDF, Word, PPT, and images; extracts paragraphs, formulas, tables, charts, and other elements in one step; generates up to 8 levels of headings; and outputs Markdown organized in reading order. Useful for field extraction, comparison and validation, knowledge retrieval, and intelligent Q&A.
+metadata: {"author":"PAODINGAI","version":"1.0.1","openclaw":{"emoji":"📝","requires":{"env":["PAODINGAI_API_KEY","PAODINGAI_API_BASE_URL"],"bins":["node"]}}}
 ---
 
 # PDFlux-PDF2Markdown
 
-执行一个 JavaScript 工作流，先通过 PDRouter 上传单个本地文件到 `pdflux` 服务，再轮询解析状态并下载 markdown。适合文档解析、表格提取、内容核对，以及把文档内容交给后续脚本继续处理。
+Run a JavaScript workflow that uploads a single local file to the `pdflux` service through PDRouter, polls the parsing status, and then downloads the resulting Markdown. This is suitable for document parsing, table extraction, content verification, and handing document content off to follow-up scripts.
 
-## 安装方式
+## Installation
 
 ```bash
 npx skills add PaodingAI/skills
 ```
 
-## 运行方式
+## Usage
 
 ```bash
-node skills/pdflux-sass-markdown/scripts/upload_to_markdown.js <local-file-path> [output-markdown-path]
+node skills/pdflux-saas-markdown/scripts/upload_to_markdown.js <local-file-path> [output-markdown-path]
 ```
 
-## 执行约束
+## Execution Constraints
 
-- 必须直接调用 `scripts/upload_to_markdown.js`，不要自行重写通过 PDRouter 上传、轮询、下载 markdown 的流程。
-- 行为约定仅用于说明脚本做什么、输出什么、何时适合使用，不是给模型手工照着执行的步骤。
-- 即使任务只是提取表格、获取字段、读取正文或为后续脚本准备输入，也必须先运行该脚本，再基于脚本产出的 markdown 继续处理。
-- 只有在脚本本身不可用、报错、或需要修复脚本时，才允许检查或修改脚本实现；在正常使用场景下不要绕过脚本。
+- You must invoke `scripts/upload_to_markdown.js` directly. Do not reimplement the upload, polling, and Markdown download flow yourself.
+- The behavior contract below explains what the script does, what it outputs, and when to use it. It is not a manual checklist for the model to imitate step by step.
+- Even if the task is only to extract tables, read fields, inspect body text, or prepare input for later scripts, you must run this script first and continue from the generated Markdown.
+- Only inspect or modify the script implementation when the script itself is unavailable, failing, or needs a fix. Do not bypass it during normal use.
 
-## 适用场景
+## When to Use
 
-- 当用户要解析文档、获取文档具体内容或抽取文档表格时，使用这个 skill。
-- 当用户输入类似“转 markdown”“输出 markdown”“导出 markdown”“提取 markdown”时，使用这个 skill，并直接输出 markdown 内容。
-- 当后续任务依赖文档内容继续处理，例如生成摘要、抽取字段、编写脚本处理文档、对比表格或做规则校验时，优先先用这个 skill 解析文档。
-- 当只是需要文档内容供后续操作使用时，不默认向用户输出原始 markdown 全文；优先将 markdown 保存到临时文件或工作文件，再读取、筛选、提取需要的内容。
-- 当用户明确要求“输出 markdown 原文”或表达的是“转 markdown”类直接转换需求时，直接展示完整 markdown。
+- Use this skill when the user wants to parse a document, retrieve specific document content, or extract tables from a document.
+- Use this skill when the user says things like "convert to Markdown", "output Markdown", "export Markdown", or "extract Markdown", and return the Markdown content directly.
+- When later work depends on the document content, such as summarization, field extraction, document-processing scripts, table comparison, or rule-based validation, use this skill first to parse the document.
+- When the document content is only needed as input for subsequent steps, do not default to showing the full raw Markdown to the user. Prefer saving it to a temporary or working file first, then read, filter, and extract only what is needed.
+- When the user explicitly asks for the original Markdown output or clearly wants a direct document-to-Markdown conversion, show the full Markdown directly.
 
-## 环境变量
+## Environment Variables
 
-- `PD_ROUTER_API_KEY`: 必填。PDRouter 的 Bearer API Key。若未设置，脚本会直接报错；在 skill 场景下，AI 应提示用户提供可用的 key，或先将其注入环境变量后再重试。可通过 PDRouter 平台获取 API Key：[https://platform.paodingai.com/](https://platform.paodingai.com/)
-- `PDFLUX_INCLUDE_IMAGES`: 可选。布尔值。markdown 默认不包含图片数据。
+- `PD_ROUTER_API_KEY`: Required. The Bearer API key for PDRouter. If it is missing, the script fails immediately. In a skill workflow, the AI should ask the user to provide a valid key, or inject it into the environment before retrying. The API key can be obtained from the PDRouter platform: [https://platform.paodingai.com/](https://platform.paodingai.com/)
+- `PDFLUX_INCLUDE_IMAGES`: Optional. Boolean. Markdown output does not include image data by default.
 
-## 默认行为与可选参数
+## Default Behavior and Optional Settings
 
-- 文件解析结果默认不包含图表、图片类解析。
-- 如果业务需要图表、图片等内容，可通过接口参数显式开启；相关结果通常以 base64 形式返回，会增加额外 tokens 消耗。
-- markdown 结果默认不包含图片数据；如果需要包含图片，请设置 `PDFLUX_INCLUDE_IMAGES=true`。
+- Parsed results do not include chart or image extraction by default.
+- If charts, images, or similar content are required, enable them explicitly through API parameters. These results are usually returned as base64 and will increase token usage.
+- Markdown output does not include image data by default. If you need embedded image data, set `PDFLUX_INCLUDE_IMAGES=true`.
 
-## 脚本行为说明
+## Script Behavior
 
-1. 从 `PD_ROUTER_API_KEY` 读取令牌；若缺失则立即失败，并提示 AI 向用户索要 key 或先注入环境变量。
-2. 使用 `Authorization: Bearer <token>` 调用 `POST /openapi/{serviceCode}/upload` 上传文件。
-3. 持续轮询 `GET /openapi/{serviceCode}/document/{uuid}`，直到 `parsed === 2`。
-4. 当解析状态为负值时立即失败。
-5. 从 `GET /openapi/{serviceCode}/document/{uuid}/markdown` 下载 markdown。
-6. 若传入 `output-markdown-path`，脚本会额外将 markdown 写入该文件；同时仍会把 markdown 输出到 stdout。
-7. 脚本将进度与错误写入 stderr，错误时返回非零退出码。
-8. 当任务目标是获取具体内容、字段或表格时，读取解析结果并只输出必要信息，不向用户直接回显原始 markdown 全文。
-9. 当用户明确表达“转 markdown”“输出 markdown”或等价意图时，直接返回 markdown 内容，而不是只返回提取后的摘要或字段。
+1. Read the token from `PD_ROUTER_API_KEY`. If it is missing, fail immediately and prompt the AI to ask the user for a key or inject the environment variable first.
+2. Upload the file with `POST /openapi/{serviceCode}/upload` using `Authorization: Bearer <token>`.
+3. Poll `GET /openapi/{serviceCode}/document/{uuid}` until `parsed === 2`.
+4. Fail immediately if the parsing status becomes negative.
+5. Download the Markdown from `GET /openapi/{serviceCode}/document/{uuid}/markdown`.
+6. If `output-markdown-path` is provided, the script also writes the Markdown to that file while still printing it to stdout.
+7. The script writes progress and errors to stderr and returns a non-zero exit code on failure.
+8. When the goal is to retrieve specific content, fields, or tables, read the parsed result and return only the necessary information instead of echoing the full raw Markdown to the user.
+9. When the user explicitly asks to "convert to Markdown", "output Markdown", or expresses an equivalent intent, return the Markdown content directly rather than only a summary or extracted fields.
