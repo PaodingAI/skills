@@ -6,12 +6,6 @@ const { stderr, stdout } = require('node:process');
 
 const DEFAULT_BASE_URL = (process.env.PD_ROUTER_BASE_URL || 'https://platform.paodingai.com/').trim();
 const DEFAULT_SERVICE_CODE = 'pdflux';
-const DEFAULT_POLL_INTERVAL_MS = 2000;
-const DEFAULT_TIMEOUT_MS = 10 * 60 * 1000;
-
-function sleep(ms) {
-  return new Promise(resolve => setTimeout(resolve, ms));
-}
 
 function normalizeBaseUrl(url) {
   return (url || DEFAULT_BASE_URL).trim().replace(/\/+$/, '');
@@ -86,7 +80,7 @@ function buildAuthHeaders(apiKey) {
   };
 }
 
-async function uploadFile({ baseUrl, serviceCode, apiKey, filePath, forceUpdate, forceOcr }) {
+async function requestSyncMarkdown({ baseUrl, serviceCode, apiKey, filePath, forceUpdate, forceOcr, includeImages }) {
   const formData = new FormData();
   const filename = path.basename(filePath);
   const bytes = await fs.readFile(filePath);
@@ -94,8 +88,9 @@ async function uploadFile({ baseUrl, serviceCode, apiKey, filePath, forceUpdate,
   formData.append('file', fileBlob, filename);
   formData.append('force_update', String(forceUpdate));
   formData.append('force_ocr', String(forceOcr));
+  formData.append('include_images', String(includeImages));
 
-  const response = await fetch(buildOpenApiUrl(baseUrl, serviceCode, 'upload'), {
+  const response = await fetch(buildOpenApiUrl(baseUrl, serviceCode, 'file/markdown'), {
     method: 'POST',
     headers: buildAuthHeaders(apiKey),
     body: formData,
@@ -103,91 +98,30 @@ async function uploadFile({ baseUrl, serviceCode, apiKey, filePath, forceUpdate,
 
   const payload = await parseResponse(response);
   if (!response.ok) {
-    throw new Error(`Upload failed (${response.status}): ${extractApiError(payload, 'Request failed')}`);
+    throw new Error(`Sync markdown failed (${response.status}): ${extractApiError(payload, 'Request failed')}`);
   }
-  if (typeof payload !== 'object' || payload.status === false) {
-    throw new Error(`Upload failed: ${extractApiError(payload, 'Invalid upload response')}`);
-  }
-
-  const uuid = payload?.data?.uuid;
-  if (!uuid) {
-    throw new Error(`Upload succeeded but uuid is missing: ${JSON.stringify(payload)}`);
+  if (typeof payload === 'object' && payload !== null && payload.status === false) {
+    throw new Error(`Sync markdown failed: ${extractApiError(payload, 'Invalid API response')}`);
   }
 
-  return uuid;
+  return payload;
 }
 
-async function pollParsed({ baseUrl, serviceCode, apiKey, uuid, pollIntervalMs, timeoutMs }) {
-  const startTime = Date.now();
-
-  while (Date.now() - startTime < timeoutMs) {
-    const response = await fetch(buildOpenApiUrl(baseUrl, serviceCode, `document/${uuid}`), {
-      method: 'GET',
-      headers: buildAuthHeaders(apiKey),
-    });
-
-    const payload = await parseResponse(response);
-    if (!response.ok) {
-      throw new Error(`Polling failed (${response.status}): ${extractApiError(payload, 'Request failed')}`);
-    }
-    if (typeof payload !== 'object' || payload.status === false) {
-      throw new Error(`Polling failed: ${extractApiError(payload, 'Invalid status response')}`);
-    }
-
-    const parsed = payload?.data?.parsed;
-    if (parsed === 2) {
-      return payload;
-    }
-    if (typeof parsed === 'number' && parsed < 0) {
-      throw new Error(`Parsing failed with status ${parsed}: ${extractApiError(payload, 'Parse failed')}`);
-    }
-
-    await sleep(pollIntervalMs);
+function resolveOutputText(payload) {
+  if (typeof payload === 'string') {
+    return payload;
   }
-
-  throw new Error(`Polling timed out after ${Math.floor(timeoutMs / 1000)} seconds.`);
-}
-
-async function downloadMarkdown({ baseUrl, serviceCode, apiKey, uuid, outputPath, includeImages }) {
-  const endpoint = includeImages ? `document/${uuid}/markdown?include_images=true` : `document/${uuid}/markdown`;
-  const response = await fetch(buildOpenApiUrl(baseUrl, serviceCode, endpoint), {
-    method: 'GET',
-    headers: buildAuthHeaders(apiKey),
-  });
-
-  const contentType = response.headers.get('content-type') || '';
-  const bodyText = await response.text();
-
-  if (!response.ok) {
-    let errorMessage = bodyText;
-    if (contentType.includes('application/json')) {
-      try {
-        const payload = JSON.parse(bodyText);
-        errorMessage = extractApiError(payload, bodyText);
-      } catch {
-        // keep bodyText
-      }
-    }
-    throw new Error(`Markdown download failed (${response.status}): ${errorMessage || 'Request failed'}`);
+  const data = payload?.data;
+  if (typeof data?.markdown === 'string') {
+    return data.markdown;
   }
-
-  if (contentType.includes('application/json')) {
-    try {
-      const payload = JSON.parse(bodyText);
-      if (payload?.status === false) {
-        throw new Error(`Markdown download failed: ${extractApiError(payload, 'API returned error')}`);
-      }
-    } catch (error) {
-      if (error instanceof Error) {
-        throw error;
-      }
-    }
+  if (typeof payload?.markdown === 'string') {
+    return payload.markdown;
   }
-
-  if (outputPath) {
-    await fs.writeFile(outputPath, bodyText, 'utf8');
+  if (typeof data === 'string') {
+    return data;
   }
-  return bodyText;
+  return JSON.stringify(payload, null, 2);
 }
 
 async function ensureInputFile(filePathArg) {
@@ -220,36 +154,26 @@ async function main() {
   const forceOcr = (process.env.PDFLUX_FORCE_OCR || 'true').trim().toLowerCase() !== 'false';
   const includeImages = parseBooleanEnv('PDFLUX_INCLUDE_IMAGES') === true;
 
-  stderr.write(`[pd-router-pdflux-markdown] Uploading ${path.basename(filePath)} via ${baseUrl}\n`);
-  const uuid = await uploadFile({ baseUrl, serviceCode, apiKey, filePath, forceUpdate, forceOcr });
-
-  stderr.write(`[pd-router-pdflux-markdown] Uploaded uuid=${uuid}\n`);
-  stderr.write('[pd-router-pdflux-markdown] Polling parse status\n');
-  await pollParsed({
+  stderr.write(`[pd-router-pdflux-markdown] Requesting sync markdown for ${path.basename(filePath)} via ${baseUrl}\n`);
+  const payload = await requestSyncMarkdown({
     baseUrl,
     serviceCode,
     apiKey,
-    uuid,
-    pollIntervalMs: DEFAULT_POLL_INTERVAL_MS,
-    timeoutMs: DEFAULT_TIMEOUT_MS,
-  });
-
-  stderr.write('[pd-router-pdflux-markdown] Parse completed, downloading markdown\n');
-  const markdown = await downloadMarkdown({
-    baseUrl,
-    serviceCode,
-    apiKey,
-    uuid,
-    outputPath,
+    filePath,
+    forceUpdate,
+    forceOcr,
     includeImages,
   });
 
+  const outputText = resolveOutputText(payload);
+
   if (outputPath) {
-    stderr.write(`[pd-router-pdflux-markdown] Markdown saved at ${outputPath}\n`);
+    stderr.write(`[pd-router-pdflux-markdown] Output saved at ${outputPath}\n`);
+    await fs.writeFile(outputPath, outputText, 'utf8');
   }
 
-  stdout.write(markdown);
-  if (!markdown.endsWith('\n')) {
+  stdout.write(outputText);
+  if (!outputText.endsWith('\n')) {
     stdout.write('\n');
   }
 }
