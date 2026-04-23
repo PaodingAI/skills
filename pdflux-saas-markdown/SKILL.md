@@ -6,7 +6,7 @@ metadata: {"author":"PAODINGAI","version":"1.0.1","openclaw":{"emoji":"📝","re
 
 # PDFlux-PDF2Markdown
 
-Run a JavaScript workflow that uploads a single local file to the `pdflux` service through PDRouter, polls the parsing status, and then downloads the resulting Markdown. This is suitable for document parsing, table extraction, content verification, and handing document content off to follow-up scripts.
+Run a JavaScript workflow that submits a single local file to the `pdflux` synchronous API through PDRouter (`POST /openapi/{serviceCode}/file/markdown`) and prints the response result in one step. This is suitable for document parsing, table extraction, content verification, and handing document content off to follow-up scripts.
 
 ## Installation
 
@@ -22,7 +22,7 @@ node skills/pdflux-saas-markdown/scripts/upload_to_markdown.js <local-file-path>
 
 ## Execution Constraints
 
-- You must invoke `scripts/upload_to_markdown.js` directly. Do not reimplement the upload, polling, and Markdown download flow yourself.
+- You must invoke `scripts/upload_to_markdown.js` directly. Do not reimplement the API flow yourself.
 - The behavior contract below explains what the script does, what it outputs, and when to use it. It is not a manual checklist for the model to imitate step by step.
 - Even if the task is only to extract tables, read fields, inspect body text, or prepare input for later scripts, you must run this script first and continue from the generated Markdown.
 - Only inspect or modify the script implementation when the script itself is unavailable, failing, or needs a fix. Do not bypass it during normal use.
@@ -49,11 +49,11 @@ node skills/pdflux-saas-markdown/scripts/upload_to_markdown.js <local-file-path>
 ## Script Behavior
 
 1. Read the token from `PD_ROUTER_API_KEY`. If it is missing, fail immediately and prompt the AI to ask the user for a key or inject the environment variable first.
-2. Upload the file with `POST /openapi/{serviceCode}/upload` using `Authorization: Bearer <token>`.
-3. Poll `GET /openapi/{serviceCode}/document/{uuid}` until `parsed === 2`.
-4. Fail immediately if the parsing status becomes negative.
-5. Download the Markdown from `GET /openapi/{serviceCode}/document/{uuid}/markdown`.
-6. If `output-markdown-path` is provided, the script also writes the Markdown to that file while still printing it to stdout.
-7. The script writes progress and errors to stderr and returns a non-zero exit code on failure.
-8. When the goal is to retrieve specific content, fields, or tables, read the parsed result and return only the necessary information instead of echoing the full raw Markdown to the user.
-9. When the user explicitly asks to "convert to Markdown", "output Markdown", or expresses an equivalent intent, return the Markdown content directly rather than only a summary or extracted fields.
+2. Send one request with the local file to `POST /openapi/{serviceCode}/file/markdown` using `Authorization: Bearer <token>`.
+3. Parse the final API response and output:
+   - Markdown text if the response contains a markdown field.
+   - Otherwise, output the JSON response payload.
+4. If `output-markdown-path` is provided, the script also writes the same output text to that file while still printing it to stdout.
+5. The script writes progress and errors to stderr and returns a non-zero exit code on failure.
+6. When the goal is to retrieve specific content, fields, or tables, read the parsed result and return only the necessary information instead of echoing full raw output to the user.
+7. When the user explicitly asks to "convert to Markdown", "output Markdown", or expresses an equivalent intent, return the Markdown content directly when present in the API response.
