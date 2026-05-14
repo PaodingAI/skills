@@ -4,7 +4,7 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { stderr, stdout } = require('node:process');
 
-const DEFAULT_BASE_URL = (process.env.PD_ROUTER_BASE_URL || 'https://platform.paodingai.com/').trim();
+const DEFAULT_BASE_URL = (process.env.PAODINGAI_API_BASE_URL || 'https://platform.paodingai.com/').trim();
 const DEFAULT_SERVICE_CODE = 'pdflux';
 
 function normalizeBaseUrl(url) {
@@ -33,14 +33,29 @@ function parseBooleanEnv(name) {
 }
 
 function requireGatewayApiKey() {
-  const fromEnv = (process.env.PD_ROUTER_API_KEY || '').trim();
+  const fromEnv = (process.env.PAODINGAI_API_KEY || '').trim();
   if (fromEnv) {
     return fromEnv;
   }
 
   throw new Error(
-    'PD_ROUTER_API_KEY is required. This skill script does not prompt for input, so ask the user to provide a PD Router API key or set PD_ROUTER_API_KEY before retrying.',
+    'PAODINGAI_API_KEY is required. This skill script does not prompt for input, so ask the user to provide a valid API key or set PAODINGAI_API_KEY before retrying.',
   );
+}
+
+function resolveMimeType(filePath) {
+  const extension = path.extname(filePath).toLowerCase();
+  const mimeByExtension = {
+    '.pdf': 'application/pdf',
+    '.doc': 'application/msword',
+    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.ppt': 'application/vnd.ms-powerpoint',
+    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.png': 'image/png',
+    '.jpg': 'image/jpeg',
+    '.jpeg': 'image/jpeg',
+  };
+  return mimeByExtension[extension] || 'application/octet-stream';
 }
 
 async function parseResponse(response) {
@@ -84,7 +99,7 @@ async function requestSyncMarkdown({ baseUrl, serviceCode, apiKey, filePath, for
   const formData = new FormData();
   const filename = path.basename(filePath);
   const bytes = await fs.readFile(filePath);
-  const fileBlob = new Blob([bytes], { type: 'application/pdf' });
+  const fileBlob = new Blob([bytes], { type: resolveMimeType(filePath) });
   formData.append('file', fileBlob, filename);
   formData.append('force_update', String(forceUpdate));
   formData.append('force_ocr', String(forceOcr));

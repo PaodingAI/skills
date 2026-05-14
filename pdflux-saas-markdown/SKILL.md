@@ -6,7 +6,7 @@ metadata: {"author":"PAODINGAI","version":"1.0.1","openclaw":{"emoji":"📝","re
 
 # PDFlux-PDF2Markdown
 
-Run a JavaScript workflow that submits a single local file to the `pdflux` synchronous API through PDRouter (`POST /openapi/{serviceCode}/file/markdown`) and prints the response result in one step. This is suitable for document parsing, table extraction, content verification, and handing document content off to follow-up scripts.
+Run a JavaScript workflow that submits a single local file to the `pdflux` synchronous API through PDRouter (`POST /openapi/{serviceCode}/file/markdown`) and prints the response result in one step. This skill only targets the latest OpenAPI flow and does not support deprecated legacy routes.
 
 ## Installation
 
@@ -37,7 +37,9 @@ node skills/pdflux-saas-markdown/scripts/upload_to_markdown.js <local-file-path>
 
 ## Environment Variables
 
-- `PD_ROUTER_API_KEY`: Required. The Bearer API key for PDRouter. If it is missing, the script fails immediately. In a skill workflow, the AI should ask the user to provide a valid key, or inject it into the environment before retrying. The API key can be obtained from the PDRouter platform: [https://platform.paodingai.com/](https://platform.paodingai.com/)
+- `PAODINGAI_API_KEY`: Required. The Bearer API key for PDRouter OpenAPI. If it is missing, the script fails immediately. In a skill workflow, the AI should ask the user to provide a valid key, or inject it into the environment before retrying.
+- `PAODINGAI_API_BASE_URL`: Optional. Defaults to `https://platform.paodingai.com/`.
+- `PD_ROUTER_SERVICE_CODE`: Optional. Defaults to `pdflux`.
 - `PDFLUX_INCLUDE_IMAGES`: Optional. Boolean. Markdown output does not include image data by default.
 
 ## Default Behavior and Optional Settings
@@ -48,7 +50,7 @@ node skills/pdflux-saas-markdown/scripts/upload_to_markdown.js <local-file-path>
 
 ## Script Behavior
 
-1. Read the token from `PD_ROUTER_API_KEY`. If it is missing, fail immediately and prompt the AI to ask the user for a key or inject the environment variable first.
+1. Read the token from `PAODINGAI_API_KEY`. If it is missing, fail immediately and prompt the AI to ask the user for a key or inject the environment variable first.
 2. Send one request with the local file to `POST /openapi/{serviceCode}/file/markdown` using `Authorization: Bearer <token>`.
 3. Parse the final API response and output:
    - Markdown text if the response contains a markdown field.
