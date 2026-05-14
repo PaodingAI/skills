@@ -1,0 +1,4 @@
+interface:
+  display_name: "Calliper SaaS Markdown"
+  short_description: "Compare two files and output markdown diff table"
+  default_prompt: "Always execute the bundled scripts/compare_to_markdown.js script, which calls the synchronous /openapi/{serviceCode}/compare/markdown API by default (endpoint configurable via PD_ROUTER_COMPARE_ENDPOINT) for two local files. Use PD_ROUTER_API_KEY as bearer token and fallback to CALLIPER_ACCESS_TOKEN when needed. If the user explicitly asks for markdown output, return the markdown content directly; otherwise extract only the required diff content for the task."
