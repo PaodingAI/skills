@@ -1,7 +1,7 @@
 ---
 name: ChatDOC Studio--KnowledgeMate
-description: Create and operate ChatDOC Studio knowledge bases through pd_router using a Bearer API key and JavaScript helpers. Use when Codex needs to upload one or more PDF/DOC/DOCX files, skip failed files without aborting the whole job, create a knowledge base from successful uploads, or call the ChatDOC Studio knowledge-base skill endpoints through `https://platform.test.paodingai.com/openapi/chatdoc-studio/...`.
-metadata: {"author":"PAODINGAI","version":"1.0.1","openclaw":{"emoji":"📝","requires":{"env":["PAODINGAI_API_KEY","PAODINGAI_API_BASE_URL"],"bins":["node"]}}}
+description: Create and operate ChatDOC Studio knowledge bases through pd_router using a Bearer API key and JavaScript helpers. Use when Codex needs to upload one or more PDF/DOC/DOCX files, skip failed files without aborting the whole job, create a knowledge base from successful uploads, or call the ChatDOC Studio knowledge-base skill endpoints through `https://platform.paodingai.com/openapi/chatdoc-studio/...`.
+metadata: {"author":"PAODINGAI","version":"1.0.1","openclaw":{"emoji":"📝","requires":{"env":["PAODINGAI_API_KEY"],"bins":["node"]}}}
 ---
 
 # ChatDOC Studio KnowledgeMate
@@ -75,9 +75,8 @@ node scripts/knowledge-mate.mjs read-syllabus --library-id <id> --upload-id <id>
 ## Environment Variables
 
 - `PAODINGAI_API_KEY`: Required. The Bearer API key for PDRouter. If it is missing, the script fails immediately and tells the user to create a Bearer API Key in pdrouter, then export it before retrying.
-- `PAODINGAI_API_BASE_URL`: Optional. Defaults to `https://platform.test.paodingai.com`. Override this only when the user explicitly needs another PDRouter environment.
 
-The service code is fixed in the script as `chatdoc-studio`; users do not need to set a service-code environment variable.
+The PDRouter base URL is fixed in the script as `https://platform.paodingai.com`. The service code is fixed in the script as `chatdoc-studio`; users do not need to set base-url or service-code environment variables.
 
 The API key can be obtained from the PDRouter platform.
 
@@ -94,7 +93,7 @@ The API key can be obtained from the PDRouter platform.
 
 ## Script Behavior
 
-1. Read `PAODINGAI_API_KEY` and `PAODINGAI_API_BASE_URL` from the environment.
+1. Read `PAODINGAI_API_KEY` from the environment and use the fixed PDRouter base URL `https://platform.paodingai.com`.
 2. Expand all `--file` inputs and recursively scanned `--dir` inputs into one de-duplicated file list.
 3. Count supported `.pdf`, `.doc`, and `.docx` files before uploading. If the count is greater than `300`, fail immediately without uploading anything.
 4. Upload supported files through `POST /openapi/chatdoc-studio/knowledge-base/upload` with concurrency `5`.

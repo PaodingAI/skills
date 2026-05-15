@@ -3,9 +3,7 @@
 import fs from "node:fs";
 import path from "node:path";
 
-const DEFAULT_BASE_URL =
-  process.env.PAODINGAI_API_BASE_URL ||
-  "https://platform.paodingai.com";
+const DEFAULT_BASE_URL = "https://platform.paodingai.com";
 const SERVICE_CODE = "chatdoc-studio";
 const DEFAULT_UPLOAD_CONCURRENCY = 5;
 const MAX_KNOWLEDGE_BASE_FILES = 300;
@@ -22,7 +20,6 @@ function usage() {
   node scripts/knowledge-mate.mjs read-syllabus --library-id <id> --upload-id <id> [--parent-index <n>]
 
 Environment:
-  PAODINGAI_API_BASE_URL  Default: ${DEFAULT_BASE_URL}
   PAODINGAI_API_KEY       Required bearer token for pd_router
 `);
 }
