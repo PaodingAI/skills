@@ -1,0 +1,4 @@
+interface:
+  display_name: "ChatDOC Studio--KnowledgeMate"
+  short_description: "Bearer-auth JS client for ChatDOC knowledge-base workflows through PDRouter"
+  default_prompt: "Use $chatdoc-studio-knowledgemate to upload PDF/DOC/DOCX files, create a ChatDOC Studio knowledge base through PDRouter, and query it."
