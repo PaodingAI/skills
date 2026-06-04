@@ -30,13 +30,10 @@ jobs:
           zip -r "../$ARCHIVE_NAME" .
 
       - name: Publish release
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: ${{ github.ref_name }}
-          name: ${{ github.ref_name }}
-          files: pdflux-saas-markdown-${{ github.ref_name }}.zip
-          generate_release_notes: true
-          overwrite_files: true
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHIVE_NAME: pdflux-saas-markdown-${{ github.ref_name }}.zip
+        run: .github/scripts/publish-github-release-asset.sh "$ARCHIVE_NAME"
 
       - name: Publish skill to ClawHub
         env:
