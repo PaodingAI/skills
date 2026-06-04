@@ -16,6 +16,11 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
       - name: Build release archive
         env:
           ARCHIVE_NAME: pdflux-saas-markdown-${{ github.ref_name }}.zip
@@ -32,3 +37,15 @@ jobs:
           files: pdflux-saas-markdown-${{ github.ref_name }}.zip
           generate_release_notes: true
           overwrite_files: true
+
+      - name: Publish skill to ClawHub
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+          CLAWHUB_OWNER: paodingai
+          CLAWHUB_SITE: ${{ vars.CLAWHUB_SITE }}
+          CLAWHUB_REGISTRY: ${{ vars.CLAWHUB_REGISTRY }}
+          CLAWHUB_TAGS: ${{ vars.CLAWHUB_TAGS }}
+          CLAWHUB_CHANGELOG: ${{ vars.CLAWHUB_CHANGELOG }}
+          CLAWHUB_CLAWSCAN_NOTE: ${{ vars.CLAWHUB_CLAWSCAN_NOTE }}
+          CLAWHUB_CLI_VERSION: 0.18.0
+        run: .github/scripts/publish-clawhub-skill.sh pdflux-saas-markdown pdflux-pdf2markdown "${{ github.ref_name }}"
