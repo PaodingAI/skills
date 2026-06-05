@@ -17,7 +17,7 @@ npx skills add PaodingAI/skills
 ## Usage
 
 ```bash
-node skills/calliper-saas-markdown/scripts/compare_to_markdown.js <left-file-path> <right-file-path> [output-markdown-path]
+node skills/calliper-compare2markdown/scripts/compare_to_markdown.js <left-file-path> <right-file-path> [output-markdown-path]
 ```
 
 ## Execution Constraints

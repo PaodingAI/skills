@@ -1,4 +1,4 @@
-name: Release calliper-saas-markdown
+name: Release pdflux-pdf2markdown
 
 on:
   push:
@@ -23,16 +23,16 @@ jobs:
 
       - name: Build release archive
         env:
-          ARCHIVE_NAME: calliper-saas-markdown-${{ github.ref_name }}.zip
+          ARCHIVE_NAME: pdflux-pdf2markdown-${{ github.ref_name }}.zip
         run: |
           rm -f "$ARCHIVE_NAME"
-          cd calliper-saas-markdown
+          cd pdflux-pdf2markdown
           zip -r "../$ARCHIVE_NAME" .
 
       - name: Publish release
         env:
           GH_TOKEN: ${{ github.token }}
-          ARCHIVE_NAME: calliper-saas-markdown-${{ github.ref_name }}.zip
+          ARCHIVE_NAME: pdflux-pdf2markdown-${{ github.ref_name }}.zip
         run: .github/scripts/publish-github-release-asset.sh "$ARCHIVE_NAME"
 
       - name: Publish skill to ClawHub
@@ -45,4 +45,4 @@ jobs:
           CLAWHUB_CHANGELOG: ${{ vars.CLAWHUB_CHANGELOG }}
           CLAWHUB_CLAWSCAN_NOTE: ${{ vars.CLAWHUB_CLAWSCAN_NOTE }}
           CLAWHUB_CLI_VERSION: 0.18.0
-        run: .github/scripts/publish-clawhub-skill.sh calliper-saas-markdown calliper-compare2markdown "${{ github.ref_name }}"
+        run: .github/scripts/publish-clawhub-skill.sh pdflux-pdf2markdown pdflux-pdf2markdown "${{ github.ref_name }}"

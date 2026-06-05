@@ -17,7 +17,7 @@ npx skills add PaodingAI/skills
 ## Usage
 
 ```bash
-node skills/pdflux-saas-markdown/scripts/upload_to_markdown.js <local-file-path> [output-markdown-path]
+node skills/pdflux-pdf2markdown/scripts/upload_to_markdown.js <local-file-path> [output-markdown-path]
 ```
 
 ## Execution Constraints
