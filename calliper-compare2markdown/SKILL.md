@@ -37,8 +37,8 @@ node skills/calliper-compare2markdown/scripts/compare_to_markdown.js <left-file-
 
 ## Environment Variables
 
-- `PD_ROUTER_API_KEY`: Preferred bearer token used by the script.
-- `CALLIPER_ACCESS_TOKEN`: Optional fallback bearer token when `PD_ROUTER_API_KEY` is absent.
+- `PAODINGAI_API_KEY`: Preferred bearer token used by the script.
+- `CALLIPER_ACCESS_TOKEN`: Optional fallback bearer token when `PAODINGAI_API_KEY` is absent.
 - `PD_ROUTER_BASE_URL`: Optional. Defaults to `https://platform.paodingai.com/`.
 - `PD_ROUTER_SERVICE_CODE`: Optional. Defaults to `calliper`.
 - `PD_ROUTER_COMPARE_ENDPOINT`: Optional. Defaults to `/compare/markdown`. Use only when routing endpoint differs.
@@ -46,7 +46,7 @@ node skills/calliper-compare2markdown/scripts/compare_to_markdown.js <left-file-
 
 ## Script Behavior
 
-1. Read bearer token from `PD_ROUTER_API_KEY`; fallback to `CALLIPER_ACCESS_TOKEN`; fail if both are missing.
+1. Read bearer token from `PAODINGAI_API_KEY`; fallback to `CALLIPER_ACCESS_TOKEN`; fail if both are missing.
 2. Validate both local input files exist.
 3. Send one multipart request with `file1`, `file2`, and optional `config` to `POST /openapi/{serviceCode}{compareEndpoint}` using `Authorization: Bearer <token>`.
 4. Parse final response and output:

@@ -19,9 +19,9 @@ function normalizeServiceCode(serviceCode) {
 }
 
 function requireBearerToken() {
-  const fromEnv = (process.env.PD_ROUTER_API_KEY || '').trim();
+  const fromEnv = (process.env.PAODINGAI_API_KEY || '').trim();
   if (fromEnv) {
-    return { token: fromEnv, source: 'PD_ROUTER_API_KEY' };
+    return { token: fromEnv, source: 'PAODINGAI_API_KEY' };
   }
 
   const fallback = (process.env.CALLIPER_ACCESS_TOKEN || '').trim();
@@ -30,7 +30,7 @@ function requireBearerToken() {
   }
 
   throw new Error(
-    'Missing bearer token. Set PD_ROUTER_API_KEY (preferred) or CALLIPER_ACCESS_TOKEN before retrying.',
+    'Missing bearer token. Set PAODINGAI_API_KEY (preferred) or CALLIPER_ACCESS_TOKEN before retrying.',
   );
 }
 
