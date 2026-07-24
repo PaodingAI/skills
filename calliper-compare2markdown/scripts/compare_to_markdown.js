@@ -5,7 +5,7 @@ const path = require('node:path');
 const { stderr, stdout } = require('node:process');
 
 const DEFAULT_BASE_URL = (
-  process.env.PD_ROUTER_BASE_URL || 'https://platform.paodingai.com/'
+  process.env.PD_ROUTER_BASE_URL || 'https://platform.paodingai.com/platform/'
 ).trim();
 const DEFAULT_SERVICE_CODE = 'calliper';
 const DEFAULT_COMPARE_ENDPOINT = '/compare/markdown';
@@ -192,8 +192,9 @@ async function main() {
   const baseUrl = normalizeBaseUrl();
   const serviceCode = normalizeServiceCode(process.env.PD_ROUTER_SERVICE_CODE);
   const compareEndpoint =
-    (process.env.PD_ROUTER_COMPARE_ENDPOINT || DEFAULT_COMPARE_ENDPOINT).trim() ||
-    DEFAULT_COMPARE_ENDPOINT;
+    (
+      process.env.PD_ROUTER_COMPARE_ENDPOINT || DEFAULT_COMPARE_ENDPOINT
+    ).trim() || DEFAULT_COMPARE_ENDPOINT;
   const compareConfig = parseCompareConfig();
 
   stderr.write(

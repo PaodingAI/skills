@@ -4,7 +4,10 @@ const fs = require('node:fs/promises');
 const path = require('node:path');
 const { stderr, stdout } = require('node:process');
 
-const DEFAULT_BASE_URL = (process.env.PAODINGAI_API_BASE_URL || 'https://platform.paodingai.com/').trim();
+const DEFAULT_BASE_URL = (
+  process.env.PAODINGAI_API_BASE_URL ||
+  'https://platform.paodingai.com/platform/'
+).trim();
 const DEFAULT_SERVICE_CODE = 'pdflux';
 
 function normalizeBaseUrl(url) {
@@ -48,9 +51,11 @@ function resolveMimeType(filePath) {
   const mimeByExtension = {
     '.pdf': 'application/pdf',
     '.doc': 'application/msword',
-    '.docx': 'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+    '.docx':
+      'application/vnd.openxmlformats-officedocument.wordprocessingml.document',
     '.ppt': 'application/vnd.ms-powerpoint',
-    '.pptx': 'application/vnd.openxmlformats-officedocument.presentationml.presentation',
+    '.pptx':
+      'application/vnd.openxmlformats-officedocument.presentationml.presentation',
     '.png': 'image/png',
     '.jpg': 'image/jpeg',
     '.jpeg': 'image/jpeg',
@@ -79,7 +84,9 @@ function extractApiError(payload, fallback) {
     return payload || fallback;
   }
   if (typeof payload === 'object') {
-    return payload.code || payload.msg || payload.message || JSON.stringify(payload);
+    return (
+      payload.code || payload.msg || payload.message || JSON.stringify(payload)
+    );
   }
   return fallback;
 }
@@ -95,7 +102,15 @@ function buildAuthHeaders(apiKey) {
   };
 }
 
-async function requestSyncMarkdown({ baseUrl, serviceCode, apiKey, filePath, forceUpdate, forceOcr, includeImages }) {
+async function requestSyncMarkdown({
+  baseUrl,
+  serviceCode,
+  apiKey,
+  filePath,
+  forceUpdate,
+  forceOcr,
+  includeImages,
+}) {
   const formData = new FormData();
   const filename = path.basename(filePath);
   const bytes = await fs.readFile(filePath);
@@ -105,18 +120,29 @@ async function requestSyncMarkdown({ baseUrl, serviceCode, apiKey, filePath, for
   formData.append('force_ocr', String(forceOcr));
   formData.append('include_images', String(includeImages));
 
-  const response = await fetch(buildOpenApiUrl(baseUrl, serviceCode, 'file/markdown'), {
-    method: 'POST',
-    headers: buildAuthHeaders(apiKey),
-    body: formData,
-  });
+  const response = await fetch(
+    buildOpenApiUrl(baseUrl, serviceCode, 'file/markdown'),
+    {
+      method: 'POST',
+      headers: buildAuthHeaders(apiKey),
+      body: formData,
+    },
+  );
 
   const payload = await parseResponse(response);
   if (!response.ok) {
-    throw new Error(`Sync markdown failed (${response.status}): ${extractApiError(payload, 'Request failed')}`);
+    throw new Error(
+      `Sync markdown failed (${response.status}): ${extractApiError(payload, 'Request failed')}`,
+    );
   }
-  if (typeof payload === 'object' && payload !== null && payload.status === false) {
-    throw new Error(`Sync markdown failed: ${extractApiError(payload, 'Invalid API response')}`);
+  if (
+    typeof payload === 'object' &&
+    payload !== null &&
+    payload.status === false
+  ) {
+    throw new Error(
+      `Sync markdown failed: ${extractApiError(payload, 'Invalid API response')}`,
+    );
   }
 
   return payload;
@@ -141,7 +167,9 @@ function resolveOutputText(payload) {
 
 async function ensureInputFile(filePathArg) {
   if (!filePathArg) {
-    throw new Error('Usage: node upload_to_markdown.js <local-file-path> [output-markdown-path]');
+    throw new Error(
+      'Usage: node upload_to_markdown.js <local-file-path> [output-markdown-path]',
+    );
   }
 
   const resolvedPath = path.resolve(filePathArg);
@@ -165,11 +193,16 @@ async function main() {
   const apiKey = requireGatewayApiKey();
   const baseUrl = normalizeBaseUrl();
   const serviceCode = normalizeServiceCode(process.env.PD_ROUTER_SERVICE_CODE);
-  const forceUpdate = (process.env.PDFLUX_FORCE_UPDATE || 'true').trim().toLowerCase() !== 'false';
-  const forceOcr = (process.env.PDFLUX_FORCE_OCR || 'true').trim().toLowerCase() !== 'false';
+  const forceUpdate =
+    (process.env.PDFLUX_FORCE_UPDATE || 'true').trim().toLowerCase() !==
+    'false';
+  const forceOcr =
+    (process.env.PDFLUX_FORCE_OCR || 'true').trim().toLowerCase() !== 'false';
   const includeImages = parseBooleanEnv('PDFLUX_INCLUDE_IMAGES') === true;
 
-  stderr.write(`[pd-router-pdflux-markdown] Requesting sync markdown for ${path.basename(filePath)} via ${baseUrl}\n`);
+  stderr.write(
+    `[pd-router-pdflux-markdown] Requesting sync markdown for ${path.basename(filePath)} via ${baseUrl}\n`,
+  );
   const payload = await requestSyncMarkdown({
     baseUrl,
     serviceCode,
@@ -194,6 +227,8 @@ async function main() {
 }
 
 main().catch(error => {
-  stderr.write(`[pd-router-pdflux-markdown] ${error instanceof Error ? error.message : String(error)}\n`);
+  stderr.write(
+    `[pd-router-pdflux-markdown] ${error instanceof Error ? error.message : String(error)}\n`,
+  );
   process.exitCode = 1;
 });

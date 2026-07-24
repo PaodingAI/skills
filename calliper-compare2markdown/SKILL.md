@@ -1,7 +1,16 @@
 ---
 name: Calliper-Compare2Markdown
 description: Compare two local documents and convert differences into LLM-ready Markdown in one synchronous call. Supports PDF, Word, PPT, and image documents accepted by Calliper, and returns a structured markdown diff table suitable for change review, clause comparison, downstream extraction, and rule-based validation.
-metadata: {"author":"PAODINGAI","version":"1.1.0","openclaw":{"emoji":"🔍","requires":{"env":["PD_ROUTER_BASE_URL"],"bins":["node"]}}}
+metadata:
+  {
+    'author': 'PAODINGAI',
+    'version': '1.1.0',
+    'openclaw':
+      {
+        'emoji': '🔍',
+        'requires': { 'env': ['PD_ROUTER_BASE_URL'], 'bins': ['node'] },
+      },
+  }
 ---
 
 # Calliper-Compare2Markdown
@@ -39,7 +48,7 @@ node skills/calliper-compare2markdown/scripts/compare_to_markdown.js <left-file-
 
 - `PAODINGAI_API_KEY`: Preferred bearer token used by the script.
 - `CALLIPER_ACCESS_TOKEN`: Optional fallback bearer token when `PAODINGAI_API_KEY` is absent.
-- `PD_ROUTER_BASE_URL`: Optional. Defaults to `https://platform.paodingai.com/`.
+- `PD_ROUTER_BASE_URL`: Optional. Defaults to `https://platform.paodingai.com/platform/`.
 - `PD_ROUTER_SERVICE_CODE`: Optional. Defaults to `calliper`.
 - `PD_ROUTER_COMPARE_ENDPOINT`: Optional. Defaults to `/compare/markdown`. Use only when routing endpoint differs.
 - `CALLIPER_COMPARE_CONFIG`: Optional. JSON string forwarded as `config` form field. Default is `{}`.

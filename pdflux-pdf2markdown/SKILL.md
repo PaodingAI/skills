@@ -1,7 +1,20 @@
 ---
 name: PDFlux-PDF2Markdown
 description: Convert unstructured documents into LLM-ready structured data. Supports PDF, Word, PPT, and images; extracts paragraphs, formulas, tables, charts, and other elements in one step; generates up to 8 levels of headings; and outputs Markdown organized in reading order. Useful for field extraction, comparison and validation, knowledge retrieval, and intelligent Q&A.
-metadata: {"author":"PAODINGAI","version":"1.0.1","openclaw":{"emoji":"📝","requires":{"env":["PAODINGAI_API_KEY","PAODINGAI_API_BASE_URL"],"bins":["node"]}}}
+metadata:
+  {
+    'author': 'PAODINGAI',
+    'version': '1.0.1',
+    'openclaw':
+      {
+        'emoji': '📝',
+        'requires':
+          {
+            'env': ['PAODINGAI_API_KEY', 'PAODINGAI_API_BASE_URL'],
+            'bins': ['node'],
+          },
+      },
+  }
 ---
 
 # PDFlux-PDF2Markdown
@@ -38,7 +51,7 @@ node skills/pdflux-pdf2markdown/scripts/upload_to_markdown.js <local-file-path> 
 ## Environment Variables
 
 - `PAODINGAI_API_KEY`: Required. The Bearer API key for PDRouter OpenAPI. If it is missing, the script fails immediately. In a skill workflow, the AI should ask the user to provide a valid key, or inject it into the environment before retrying.
-- `PAODINGAI_API_BASE_URL`: Optional. Defaults to `https://platform.paodingai.com/`.
+- `PAODINGAI_API_BASE_URL`: Optional. Defaults to `https://platform.paodingai.com/platform/`.
 - `PD_ROUTER_SERVICE_CODE`: Optional. Defaults to `pdflux`.
 - `PDFLUX_INCLUDE_IMAGES`: Optional. Boolean. Markdown output does not include image data by default.
 
