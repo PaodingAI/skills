@@ -1,0 +1,4 @@
+interface:
+  display_name: "AutoDoc NEXT2.0"
+  short_description: "审核单份募集说明书并下载带批注的结果文档"
+  default_prompt: "Use $autodoc-next-prospectus-audit to start and monitor the prospectus audit; return the request_id and intermediate status, and run the separate download command only when the user requests the annotated result."
