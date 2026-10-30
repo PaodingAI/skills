@@ -1,0 +1,7 @@
+interface:
+  display_name: "NanoDoc--Parse"
+  short_description: "Bearer-auth JS client that parses supported documents through PDRouter"
+  default_prompt: "Use $nanodoc-parse to upload one local PDF, image, DOCX, PPTX, or XLSX through PDRouter, wait for NanoDoc to finish, and read the extracted Markdown or result.json."
+
+policy:
+  allow_implicit_invocation: true
