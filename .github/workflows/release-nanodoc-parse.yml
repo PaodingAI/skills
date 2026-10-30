@@ -1,0 +1,48 @@
+name: Release nanodoc-parse
+
+on:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Build release archive
+        env:
+          ARCHIVE_NAME: nanodoc-parse-${{ github.ref_name }}.zip
+        run: |
+          rm -f "$ARCHIVE_NAME"
+          cd nanodoc-parse
+          zip -r "../$ARCHIVE_NAME" .
+
+      - name: Publish release
+        env:
+          GH_TOKEN: ${{ github.token }}
+          ARCHIVE_NAME: nanodoc-parse-${{ github.ref_name }}.zip
+        run: .github/scripts/publish-github-release-asset.sh "$ARCHIVE_NAME"
+
+      - name: Publish skill to ClawHub
+        env:
+          CLAWHUB_TOKEN: ${{ secrets.CLAWHUB_TOKEN }}
+          CLAWHUB_OWNER: paodingai
+          CLAWHUB_SITE: ${{ vars.CLAWHUB_SITE }}
+          CLAWHUB_REGISTRY: ${{ vars.CLAWHUB_REGISTRY }}
+          CLAWHUB_TAGS: ${{ vars.CLAWHUB_TAGS }}
+          CLAWHUB_CHANGELOG: ${{ vars.CLAWHUB_CHANGELOG }}
+          CLAWHUB_CLAWSCAN_NOTE: ${{ vars.CLAWHUB_CLAWSCAN_NOTE }}
+          CLAWHUB_CLI_VERSION: 0.18.0
+        run: .github/scripts/publish-clawhub-skill.sh nanodoc-parse nanodoc-parse "${{ github.ref_name }}"
